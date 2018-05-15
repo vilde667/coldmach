@@ -2,6 +2,7 @@ import sqlite3
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 
 class Value:
@@ -219,6 +220,89 @@ class ColdSystem:
         self.point4d.human_name = '4\''
         self.point4d.print_all()
 
+    def get_points_params(self):
+        #Точка 1
+        o = self.t['o'] + 273.15
+        o = round(o)
+        vs = self.t['vs'] + 273.15
+        vs = round(vs)
+        cond = self.t['cond'] + 273.15
+        cond = round(cond)
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM amm_wet WHERE T={0};'.format(o))
+        req = cur.fetchone()
+        p_1 = req[2]
+        cur.execute('SELECT * FROM amm_wet WHERE T={0};'.format(cond))
+        req = cur.fetchone()
+        print(req[2])
+        v_1, h_1, s_1 = self.get_over_p_t(p_1, vs)
+        self.point1.temp.value = self.t['vs']
+        self.point1.press.value = p_1 / 10
+        self.point1.ent.value = h_1
+        self.point1.cap.value = v_1
+        self.point1.state = 'over'
+        self.point1.human_name = '1\''
+        self.point1.print_all()
+
+        #точка 1'
+        cur.execute('SELECT vdd, hdd FROM amm_wet WHERE P={0};'.format(p_1))
+        res_1d = cur.fetchone()
+        v_1d, h_1d = res_1d
+        self.point1d.temp.value = self.t['o']
+        self.point1d.press.value = p_1 / 10
+        self.point1d.ent.value = h_1d
+        self.point1d.cap.value = v_1d
+        self.point1d.state = 'wet'
+        self.point1d.human_name = '1\''
+        self.point1d.print_all()
+        conn.close()
+
+    def get_over_p_t(self, p=None, t=None):
+        delta_p = 10
+        delta_t = 5
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM amm_over WHERE P>{0} AND P<{1} AND T>{2} AND T<{3}'.format(p - delta_p, p + delta_p,
+                                                                                              t - delta_t, t + delta_t))
+        response = cur.fetchall()
+        t_tab = response[1][0]
+        if t_tab - t >= 0:
+            t_tab_max = t_tab
+            t_tab_min = t_tab - 10
+        else:
+            t_tab_min = t_tab
+            t_tab_max = t_tab + 10
+        near_min = []
+        near_plus = []
+        for x in response:
+            if p - x[1] >= 0:
+                near_plus.append(p - x[1])
+            else:
+                near_min.append(p - x[1])
+        p_tab_min = max(near_min)
+        p_tab_max = min(near_plus)
+        print(p - p_tab_min, p - p_tab_max, t_tab_min, t_tab_max)
+        res_all = []
+        # cur.execute('SELECT v,h FROM amm_over WHERE P={0} AND T={1}'.format(p - p_tab_min, int(t_tab_min)))
+        # res_all.append(cur.fetchone())
+        # cur.execute('SELECT v,h FROM amm_over WHERE P={0} AND T={1}'.format(p - p_tab_max, int(t_tab_min)))
+        # res_all.append(cur.fetchone())
+        cur.execute('SELECT v,h,s FROM amm_over WHERE P={0} AND T={1}'.format(p - p_tab_min, int(t_tab_max)))
+        res_all.append(cur.fetchone())
+        cur.execute('SELECT v,h,s FROM amm_over WHERE P={0} AND T={1}'.format(p - p_tab_max, int(t_tab_max)))
+        res_all.append(cur.fetchone())
+        zipped = tuple(zip(res_all[0], res_all[1]))
+        v = (zipped[0][0] + zipped[0][1]) / 2
+        h = (zipped[1][0] + zipped[1][1]) / 2
+        s = (zipped[2][0] + zipped[2][1]) / 2
+        print(zipped)
+        print(v, h, s)
+        conn.close()
+        return v, h, s
+
+
+
     def plot_graph(self):
         x = np.arange(self.point1.ent.value, self.point2.ent.value)
         p = self.point2.press.value
@@ -264,5 +348,6 @@ class ColdSystem:
 
 main = ColdSystem(115, 'R717', 'Астрахань', -15)
 main.get_main_temps()
-main.make_current_test_cycle()
-main.plot_graph()
+main.get_points_params()
+# main.make_current_test_cycle()
+# main.plot_graph()
