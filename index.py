@@ -22,7 +22,7 @@ class Point:
         self.human_name = ''
 
     def print_all(self):
-        print('Для данной точки')
+        print('Для данной точки', self.human_name)
         for y in [self.temp, self.press, self.ent, self.cap]:
             self.get_one(y)
 
@@ -88,138 +88,6 @@ class ColdSystem:
         r = input('введите значение {0} при {1} = {2}\n'.format(param, ret_par, ret))
         return float(r)
 
-    def make_cycle(self):
-        # найдем параметры 1' точки
-        self.point1.temp.value = self.t['vs']
-        self.point1.press.value = self.get_param('давление', self.point1.temp.amount, self.point1.temp.value)
-        self.point1.ent.value = self.get_param('энтальпия', self.point1.temp.amount, self.point1.temp.value)
-        self.point1.cap.value = self.get_param('удельный объем', self.point1.temp.amount, self.point1.temp.value)
-        self.point1.state = self.point1.get_state(self.point1)
-        self.point1.human_name = '1'
-        self.point1.print_all()
-
-        self.point1d.temp.value = self.t['o']
-        self.point1d.press.value = self.point1.press.value
-        self.point1d.ent.value = self.get_param('энтальпия', self.point1d.temp.amount, self.point1d.temp.value)
-        self.point1d.cap.value = self.get_param('удельный объем', self.point1d.temp.amount, self.point1d.temp.value)
-        self.point1d.state = self.point1d.get_state(self.point1d)
-        self.point1d.human_name = '1\''
-        self.point1d.print_all()
-
-        self.point2.temp.value = self.get_param('температура', self.point2.temp.amount, self.point2.temp.value)
-        self.point2.press.value = self.get_param('давление', self.point2.temp.amount, self.point2.temp.value)
-        self.point2.ent.value = self.get_param('энтальпия', self.point2.temp.amount, self.point2.temp.value)
-        self.point2.cap.value = self.get_param('удельный объем', self.point2.temp.amount, self.point2.temp.value)
-        self.point2.state = self.point2.get_state(self.point2)
-        self.point2.human_name = '2'
-        self.point2.print_all()
-
-        self.point2d.temp.value = self.t['over']
-        self.point2d.press.value = self.point2.press.value
-        self.point2d.ent.value = self.get_param('энтальпия', self.point2d.temp.amount, self.point2d.temp.value)
-        self.point2d.cap.value = self.get_param('удельный объем', self.point2d.temp.amount, self.point2d.temp.value)
-        self.point2d.state = self.point2d.get_state(self.point2d)
-        self.point2d.human_name = '2\''
-        self.point2d.print_all()
-
-        self.point3.temp.value = self.point2d.temp.value
-        self.point3.press.value = self.point2.press.value
-        self.point3.ent.value = self.get_param('энтальпия', self.point3.temp.amount, self.point3.temp.value)
-        self.point3.cap.value = self.get_param('удельный объем', self.point3.temp.amount, self.point3.temp.value)
-        self.point3.state = self.point3.get_state(self.point3)
-        self.point3.human_name = '3'
-        self.point3.print_all()
-
-        self.point3d.temp.value = self.get_param('температура', self.point3d.temp.amount, self.point3d.temp.value)
-        self.point3d.press.value = self.point2.press.value
-        self.point3d.ent.value = self.get_param('энтальпия', self.point3d.temp.amount, self.point3d.temp.value)
-        self.point3d.cap.value = self.get_param('удельный объем', self.point3d.temp.amount, self.point3d.temp.value)
-        self.point3d.state = self.point3d.get_state(self.point3d)
-        self.point3d.human_name = '3\''
-        self.point3d.print_all()
-
-        self.point4.temp.value = self.t['o']
-        self.point4.press.value = self.point1.press.value
-        self.point4.ent.value = self.get_param('энтальпия', self.point4.temp.amount, self.point4.temp.value)
-        self.point4.cap.value = self.get_param('удельный объем', self.point4.temp.amount, self.point4.temp.value)
-        self.point4.state = self.point4.get_state(self.point4)
-        self.point4.human_name = '4'
-        self.point4.print_all()
-
-        self.point4d.temp.value = self.t['o']
-        self.point4d.press.value = self.point1.press.value
-        self.point4d.ent.value = self.get_param('энтальпия', self.point4d.temp.amount, self.point4d.temp.value)
-        self.point4d.cap.value = self.get_param('удельный объем', self.point4d.temp.amount, self.point4d.temp.value)
-        self.point4d.state = self.point4d.get_state(self.point4d)
-        self.point4d.human_name = '4\''
-        self.point4d.print_all()
-
-    def make_current_test_cycle(self):
-        # найдем параметры 1' точки
-        self.point1.temp.value = self.t['vs']
-        self.point1.press.value = 0.196
-        self.point1.ent.value = 1675
-        self.point1.cap.value = 0.61
-        self.point1.state = 'over'
-        self.point1.human_name = '1'
-        self.point1.print_all()
-
-        self.point1d.temp.value = self.t['o']
-        self.point1d.press.value = self.point1.press.value
-        self.point1d.ent.value = 1660
-        self.point1d.cap.value = 0.6
-        self.point1d.state = 'wet'
-        self.point1d.human_name = '1\''
-        self.point1d.print_all()
-
-        self.point2.temp.value = 129
-        self.point2.press.value = 1.32
-        self.point2.ent.value = 1965
-        self.point2.cap.value = 0.14
-        self.point2.state = 'over'
-        self.point2.human_name = '2'
-        self.point2.print_all()
-
-        self.point2d.temp.value = self.t['over']
-        self.point2d.press.value = self.point2.press.value
-        self.point2d.ent.value = 1710
-        self.point2d.cap.value = 0.09
-        self.point2d.state = 'wet'
-        self.point2d.human_name = '2\''
-        self.point2d.print_all()
-
-        self.point3.temp.value = self.point2d.temp.value
-        self.point3.press.value = self.point2.press.value
-        self.point3.ent.value = 565
-        self.point3.cap.value = 0
-        self.point3.state = 'liquid'
-        self.point3.human_name = '3'
-        self.point3.print_all()
-
-        self.point3d.temp.value = 38
-        self.point3d.press.value = self.point2.press.value
-        self.point3d.ent.value = 590
-        self.point3d.cap.value = 0
-        self.point3d.state = 'liquid'
-        self.point3d.human_name = '3\''
-        self.point3d.print_all()
-
-        self.point4.temp.value = self.t['o']
-        self.point4.press.value = self.point1.press.value
-        self.point4.ent.value = 565
-        self.point4.cap.value = 0.105
-        self.point4.state = 'wet'
-        self.point4.human_name = '4'
-        self.point4.print_all()
-
-        self.point4d.temp.value = self.t['o']
-        self.point4d.press.value = self.point1.press.value
-        self.point4d.ent.value = 590
-        self.point4d.cap.value = 0.12
-        self.point4d.state = 'wet'
-        self.point4d.human_name = '4\''
-        self.point4d.print_all()
-
     def get_points_params(self):
         #Точка 1
         o = self.t['o'] + 273.15
@@ -235,14 +103,16 @@ class ColdSystem:
         p_1 = req[2]
         cur.execute('SELECT * FROM amm_wet WHERE T={0};'.format(cond))
         req = cur.fetchone()
-        print(req[2])
-        v_1, h_1, s_1 = self.get_over_p_t(p_1, vs)
+        p_2 = req[2]
+        p_1_tab_min, p_1_tab_max = self.get_near_p(p_1)
+        p_2_tab_min, p_2_tab_max = self.get_near_p(p_2)
+        v_1, h_1, s_1, p_tab_min, p_tab_max = self.get_over_p_t(p_1, vs, p_1_tab_min, p_1_tab_max)
         self.point1.temp.value = self.t['vs']
         self.point1.press.value = p_1 / 10
         self.point1.ent.value = h_1
         self.point1.cap.value = v_1
         self.point1.state = 'over'
-        self.point1.human_name = '1\''
+        self.point1.human_name = '1'
         self.point1.print_all()
 
         #точка 1'
@@ -258,50 +128,246 @@ class ColdSystem:
         self.point1d.print_all()
         conn.close()
 
-    def get_over_p_t(self, p=None, t=None):
-        delta_p = 10
-        delta_t = 5
+        t_2, h_2, v_2 = self.get_over_p_s(p_2, s_1, p_2_tab_min, p_2_tab_max)
+
+        self.point2.temp.value = t_2 - 273.15
+        self.point2.press.value = p_2 / 10
+        self.point2.ent.value = h_2
+        self.point2.cap.value = v_2
+        self.point2.state = 'over'
+        self.point2.human_name = '2'
+        self.point2.print_all()
+
+        v_2d, h_2d = self.get_wet_p_max(p_2)
+        self.point2d.temp.value = self.t['cond']
+        self.point2d.press.value = self.point2.press.value
+        self.point2d.ent.value = h_2d
+        self.point2d.cap.value = v_2d
+        self.point2d.state = 'wet'
+        self.point2d.human_name = '2\''
+        self.point2d.print_all()
+
+        v_3d, h_3d = self.get_wet_p_min(p_2)
+        self.point3d.temp.value = self.t['cond']
+        self.point3d.press.value = self.point2.press.value
+        self.point3d.ent.value = h_3d
+        self.point3d.cap.value = v_3d
+        self.point3d.state = 'wet'
+        self.point3d.human_name = '3\''
+        self.point3d.print_all()
+
+        h_3, v_3 = self.get_point3()
+        self.point3.temp.value = self.t['over']
+        self.point3.press.value = self.point2.press.value
+        self.point3.ent.value = h_3
+        self.point3.cap.value = v_3
+        self.point3.state = 'liquid'
+        self.point3.human_name = '3'
+        self.point3.print_all()
+
+        v_4, v_4d = self.get_points_4_4d(o, h_3, h_3d)
+
+        self.point4.temp.value = self.t['o']
+        self.point4.press.value = self.point1.press.value
+        self.point4.ent.value = self.point3.ent.value
+        self.point4.cap.value = v_4
+        self.point4.state = 'wet'
+        self.point4.human_name = '4'
+        self.point4.print_all()
+
+        self.point4d.temp.value = self.t['o']
+        self.point4d.press.value = self.point1.press.value
+        self.point4d.ent.value =  self.point3d.ent.value
+        self.point4d.cap.value = v_4d
+        self.point4d.state = 'wet'
+        self.point4d.human_name = '4\''
+        self.point4d.print_all()
+
+    def get_points_4_4d(self, t, h_4, h_4d):
         conn = sqlite3.connect('main.db')
         cur = conn.cursor()
-        cur.execute('SELECT * FROM amm_over WHERE P>{0} AND P<{1} AND T>{2} AND T<{3}'.format(p - delta_p, p + delta_p,
-                                                                                              t - delta_t, t + delta_t))
+        cur.execute('SELECT hd, hdd, vd, vdd FROM amm_wet WHERE T={0}'.format(t))
+        hd, hdd, vdd, vd = cur.fetchone()
+        x_4 = (h_4 - hd) / (hdd - hd)
+        v_4 = vd + x_4 * (vdd - vd)
+        x_4d = (h_4d - hd) / (hdd - hd)
+        v_4d = vd + x_4d * (vdd - vd)
+        return v_4, v_4d
+
+    def get_point3(self):
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        p = self.point2d.press.value * 10
+        t = self.t['over'] + 273.15
+        t_tab_min, t_tab_max = self.get_near_t(t)
+        p_tab_min, p_tab_max = self.get_near_p(p)
+        res_all = []
+        cur.execute('SELECT v,h FROM amm_over WHERE P={0} AND T={1}'.format(p_tab_min, int(t_tab_min)))
+        res_all.append(cur.fetchone())
+        cur.execute('SELECT v,h FROM amm_over WHERE P={0} AND T={1}'.format(p_tab_max, int(t_tab_min)))
+        res_all.append(cur.fetchone())
+        zipped = tuple(zip(res_all[0], res_all[1]))
+        v = (t - t_tab_min) / (t_tab_max - t_tab_min) * (zipped[0][1] - zipped[0][0]) + zipped[0][0]
+        h = (t - t_tab_min) / (t_tab_max - t_tab_min) * (zipped[1][1] - zipped[1][0]) + zipped[1][0]
+        conn.close()
+        return h, v
+
+    def get_wet_p_max(self, p=None):
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        cur.execute('SELECT vdd, hdd FROM amm_wet WHERE P={0}'.format(p))
+        v, h = cur.fetchone()
+        conn.close()
+        return v, h
+
+    def get_wet_p_min(self, p=None):
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        cur.execute('SELECT vd, hd FROM amm_wet WHERE P={0}'.format(p))
+        v, h = cur.fetchone()
+        conn.close()
+        return v, h
+
+    def get_near_p(self, p):
+        delta_p = 10
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM amm_over WHERE P>{0} AND P<{1} AND T=300'.format(p - delta_p, p + delta_p))
         response = cur.fetchall()
-        t_tab = response[1][0]
+        near_minus = []
+        near_plus = []
+        for x in response:
+            if p - x[1] >= 0:
+                near_plus.append(p - x[1])
+            else:
+                near_minus.append(p - x[1])
+        p_tab_min_ = max(near_minus)
+        p_tab_max_ = min(near_plus)
+        p_tab_min = p - p_tab_min_
+        p_tab_max = p - p_tab_max_
+        conn.close()
+        return p_tab_min, p_tab_max
+
+    def get_near_t(self, t):
+        delta_t = 10
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        cur.execute('SELECT T FROM amm_over WHERE T>{0} AND T<{1} AND P=3.0'.format(t - delta_t, t + delta_t))
+        response = cur.fetchall()
+        near_minus = []
+        near_plus = []
+        for x in response:
+            if t - x[0] >= 0:
+                near_plus.append(t - x[0])
+            else:
+                near_minus.append(t - x[0])
+        t_tab_min_ = max(near_minus)
+        t_tab_max_ = min(near_plus)
+        t_tab_min = t - t_tab_min_
+        t_tab_max = t - t_tab_max_
+        conn.close()
+        return t_tab_max, t_tab_min
+
+    def get_over_p_t(self, p=None, t=None, p_tab_min=None, p_tab_max=None):
+        print(t, p)
+        delta_t = 5  # type: int
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM amm_over WHERE P={0} AND T>{1} AND T<{2}'.format(
+            p_tab_min, t - delta_t, t + delta_t))
+        response = cur.fetchall()
+
+        t_tab = response[0][0]
         if t_tab - t >= 0:
             t_tab_max = t_tab
             t_tab_min = t_tab - 10
         else:
             t_tab_min = t_tab
             t_tab_max = t_tab + 10
-        near_min = []
-        near_plus = []
-        for x in response:
-            if p - x[1] >= 0:
-                near_plus.append(p - x[1])
-            else:
-                near_min.append(p - x[1])
-        p_tab_min = max(near_min)
-        p_tab_max = min(near_plus)
-        print(p - p_tab_min, p - p_tab_max, t_tab_min, t_tab_max)
+
         res_all = []
-        # cur.execute('SELECT v,h FROM amm_over WHERE P={0} AND T={1}'.format(p - p_tab_min, int(t_tab_min)))
-        # res_all.append(cur.fetchone())
-        # cur.execute('SELECT v,h FROM amm_over WHERE P={0} AND T={1}'.format(p - p_tab_max, int(t_tab_min)))
-        # res_all.append(cur.fetchone())
-        cur.execute('SELECT v,h,s FROM amm_over WHERE P={0} AND T={1}'.format(p - p_tab_min, int(t_tab_max)))
+        cur.execute('SELECT v,h,s FROM amm_over WHERE P={0} AND T={1}'.format(p_tab_min, int(t_tab_min)))
         res_all.append(cur.fetchone())
-        cur.execute('SELECT v,h,s FROM amm_over WHERE P={0} AND T={1}'.format(p - p_tab_max, int(t_tab_max)))
+        cur.execute('SELECT v,h,s FROM amm_over WHERE P={0} AND T={1}'.format(p_tab_max, int(t_tab_min)))
         res_all.append(cur.fetchone())
-        zipped = tuple(zip(res_all[0], res_all[1]))
-        v = (zipped[0][0] + zipped[0][1]) / 2
-        h = (zipped[1][0] + zipped[1][1]) / 2
-        s = (zipped[2][0] + zipped[2][1]) / 2
+        cur.execute('SELECT v,h,s FROM amm_over WHERE P={0} AND T={1}'.format(p_tab_min, int(t_tab_max)))
+        res_all.append(cur.fetchone())
+        cur.execute('SELECT v,h,s FROM amm_over WHERE P={0} AND T={1}'.format(p_tab_max, int(t_tab_max)))
+        res_all.append(cur.fetchone())
+        zipped = tuple(zip(res_all[0], res_all[1], res_all[2], res_all[3]))
+        v1 = (t - t_tab_min) / (t_tab_max - t_tab_min) * (zipped[0][2] - zipped[0][0]) + zipped[0][0]
+        v2 = (t - t_tab_min) / (t_tab_max - t_tab_min) * (zipped[0][3] - zipped[0][1]) + zipped[0][1]
+        v = (p - p_tab_min) / (p_tab_max - p_tab_min) * (v2 - v1) + v1
+        h1 = (t - t_tab_min) / (t_tab_max - t_tab_min) * (zipped[1][2] - zipped[1][0]) + zipped[1][0]
+        h2 = (t - t_tab_min) / (t_tab_max - t_tab_min) * (zipped[1][3] - zipped[1][1]) + zipped[1][1]
+        h = (p - p_tab_min) / (p_tab_max - p_tab_min) * (h2 - h1) + h1
+        s1 = (t - t_tab_min) / (t_tab_max - t_tab_min) * (zipped[2][2] - zipped[2][0]) + zipped[2][0]
+        s2 = (t - t_tab_min) / (t_tab_max - t_tab_min) * (zipped[2][3] - zipped[2][1]) + zipped[2][1]
+        s = (p - p_tab_min) / (p_tab_max - p_tab_min) * (s2 - s1) + s1
         print(zipped)
         print(v, h, s)
         conn.close()
-        return v, h, s
+        return v, h, s, p_tab_min, p_tab_max
 
-
+    def get_over_p_s(self, p=None, s=None, p_tab_min=None, p_tab_max=None):
+        print(s, p)
+        delta_s = 0.2
+        conn = sqlite3.connect('main.db')
+        cur = conn.cursor()
+        cur.execute(
+            'SELECT t,s FROM amm_over WHERE P={0} AND S>{1} AND S<{2};'.format(p_tab_min, s - delta_s, s + delta_s))
+        response = cur.fetchall()
+        near_plus = []
+        near_min = []
+        for x in response:
+            if s - x[1] >= 0:
+                near_plus.append(s - x[1])
+            else:
+                near_min.append(s - x[1])
+        s_tab_min = max(near_min)
+        s_tab_max = min(near_plus)
+        s_tab_min1 = s - s_tab_min
+        s_tab_max1 = s - s_tab_max
+        cur.execute(
+            'SELECT t,s FROM amm_over WHERE P={0} AND S>{1} AND S<{2}'.format(p_tab_max, s - delta_s, s + delta_s))
+        response = cur.fetchall()
+        near_plus = []
+        near_min = []
+        for x in response:
+            if s - x[1] >= 0:
+                near_plus.append(s - x[1])
+            else:
+                near_min.append(s - x[1])
+        s_tab_min = max(near_min)
+        s_tab_max = min(near_plus)
+        s_tab_min2 = s - s_tab_min
+        s_tab_max2 = s - s_tab_max
+        print(s_tab_min1, s_tab_min2, s_tab_max1, s_tab_max2)
+        res_all = []
+        cur.execute(
+            'SELECT t,h,v FROM amm_over WHERE P={0} AND S={1};'.format(p_tab_min, s_tab_min1))
+        res_all.append(cur.fetchone())
+        cur.execute(
+            'SELECT t,h,v FROM amm_over WHERE P={0} AND S={1};'.format(p_tab_min, s_tab_max1))
+        res_all.append(cur.fetchone())
+        cur.execute(
+            'SELECT t,h,v FROM amm_over WHERE P={0} AND S={1};'.format(p_tab_max, s_tab_min2))
+        res_all.append(cur.fetchone())
+        cur.execute(
+            'SELECT t,h,v FROM amm_over WHERE P={0} AND S={1};'.format(p_tab_max, s_tab_max2))
+        res_all.append(cur.fetchone())
+        zipped = tuple(zip(res_all[0], res_all[1], res_all[2] ,res_all[3]))
+        t1 = (s - s_tab_min1) / (s_tab_max1 - s_tab_min1) * (zipped[0][1] - zipped[0][0]) + zipped[0][0]
+        t2 = (s - s_tab_min2) / (s_tab_max2 - s_tab_min2) * (zipped[0][3] - zipped[0][2]) + zipped[0][2]
+        t = (p - p_tab_min) / (p_tab_max - p_tab_min) * (t2 - t1) + t1
+        h1 = (s - s_tab_min1) / (s_tab_max1 - s_tab_min1) * (zipped[1][1] - zipped[1][0]) + zipped[1][0]
+        h2 = (s - s_tab_min2) / (s_tab_max2 - s_tab_min2) * (zipped[1][3] - zipped[1][2]) + zipped[1][2]
+        h = (p - p_tab_min) / (p_tab_max - p_tab_min) * (h2 - h1) + h1
+        v1 = (s - s_tab_min1) / (s_tab_max1 - s_tab_min1) * (zipped[2][1] - zipped[2][0]) + zipped[2][0]
+        v2 = (s - s_tab_min2) / (s_tab_max2 - s_tab_min2) * (zipped[2][3] - zipped[2][2]) + zipped[2][2]
+        v = (p - p_tab_min) / (p_tab_max - p_tab_min) * (v2 - v1) + v1
+        conn.close()
+        return t, h, v
 
     def plot_graph(self):
         x = np.arange(self.point1.ent.value, self.point2.ent.value)
@@ -316,13 +382,13 @@ class ColdSystem:
         for point in self.points:
             plt.scatter(point.ent.value, point.press.value)
             if '\'' in point.human_name:
-                plt.annotate(s='точка ' + point.human_name, xy=(point.ent.value, point.press.value,),
+                plt.annotate(s=point.human_name, xy=(point.ent.value, point.press.value,),
                              xytext=(point.ent.value, point.press.value+0.03,))
             else:
-                plt.annotate(s='точка ' + point.human_name, xy=(point.ent.value, point.press.value,),
-                             xytext=(point.ent.value, point.press.value-0.03,))
+                plt.annotate(s=point.human_name, xy=(point.ent.value, point.press.value,),
+                             xytext=(point.ent.value + 10, point.press.value-0.06,))
         plt.plot(x, z)
-        plt.xlim(500, 2000)
+        plt.xlim(200, 2100)
         plt.ylim(0.1, 1.5)
         plt.show()
 
@@ -346,8 +412,7 @@ class ColdSystem:
             self.point4d = pickler[7]
 
 
-main = ColdSystem(115, 'R717', 'Астрахань', -15)
+main = ColdSystem(115, 'R717', 'Салехард', -15)
 main.get_main_temps()
 main.get_points_params()
-# main.make_current_test_cycle()
-# main.plot_graph()
+main.plot_graph()
