@@ -73,6 +73,7 @@ class ColdSystem:
         self.point4 = Point()
         self.point4d = Point()
         self.std = StandartParams()
+        self.compressor = None
 
     @staticmethod
     def __get_t_in_k(city):
@@ -210,8 +211,8 @@ class ColdSystem:
     @staticmethod
     def __get_lambda(pk, p0):
         delta = pk / p0
-        func = [(4.3, 0.8), (5, 0.79), (6, 0.77), (7, 0.755), (8, 0.745), (9, 0.73)]
-        for x in range(5):
+        func = [(3, 0.8), (4, 0.8), (4.3, 0.8), (5, 0.79), (6, 0.77), (7, 0.755), (8, 0.745), (9, 0.73)]
+        for x in range(6):
             if func[x][0] < delta < func[x + 1][0]:
                 lambda_ = (delta - func[x][0]) / (func[x + 1][0] - func[x][0]) * (func[x + 1][1] - func[x][1]) + \
                           func[x][1]
@@ -257,6 +258,15 @@ class ColdSystem:
             elif 't' in kwargs.keys():
                 cur.execute('SELECT {0} FROM {1} WHERE T={2};'.format(sel, table, kwargs['t']))
                 r = cur.fetchone()
+                return r
+            elif 'Q' in kwargs.keys() and 'agent' in kwargs.keys():
+                q = int(kwargs['Q'])
+                cur.execute('SELECT {0} FROM {1} WHERE Q_R717 > {2};'.format(sel, table, q))
+                r = cur.fetchall()
+                return r
+            elif 'Q' in kwargs.keys():
+                cur.execute('SELECT {0} FROM {1} WHERE Q_R717 = {2};'.format(sel, table, kwargs['Q']))
+                r = cur.fetchall()
                 return r
             else:
                 return 0
@@ -414,18 +424,21 @@ class ColdSystem:
         plt.show()
 
     def get_charact_params(self):
-        pass
-        # q0 = self.point1d.ent.value - self.point4.ent.value
-        # l = self.point2.ent.value - self.point1.ent.value
-        # qk = self.point2.ent.value - self.point3d.ent.value
-        # e = q0 / l
-        # g0 = self.Q0 / q0
-        # v0 = g0 * self.point1.cap.value
-        # qv = q0 / self.point1.cap.value
-        # qv_st = (self.std.point1d.ent.value - self.std.point4.ent.value) / self.std.point1.cap.value
-        # lambda_ = self.__get_lambda(self.point2.press.value, self.point1.press.value)
-        # lambda_st = self.__get_lambda(self.std.point2.press.value, self.std.point1.press.value)
-        # Q0_st = self.Q0 * (qv_st * lambda_st) / qv * lambda_
+        q0 = self.point1d.ent.value - self.point4.ent.value
+        ll = self.point2.ent.value - self.point1.ent.value
+        qk = self.point2.ent.value - self.point3d.ent.value
+        e = q0 / ll
+        g0 = self.Q0 / q0
+        v0 = g0 * self.point1.cap.value
+        qv = q0 / self.point1.cap.value
+        qv_st = (self.std.point1d.ent.value - self.std.point4.ent.value) / self.std.point1.cap.value
+        lambda_ = self.__get_lambda(self.point2.press.value, self.point1.press.value)
+        lambda_st = self.__get_lambda(self.std.point2.press.value, self.std.point1.press.value)
+        q0_st = self.Q0 * (qv_st * lambda_st) / qv * lambda_
+        q_tuple = self.__query('compressors', 'Q_' + self.Ca, Q=q0_st, agent=self.Ca)
+        compressor_q = min(q_tuple)[0]
+        self.compressor = self.__query('compressors', '*', Q=compressor_q)
+        return [q0, ll, qk, e, g0, v0, qv, q0_st]
 
     def get_points_params(self):
         # Точка 1
@@ -530,9 +543,11 @@ class ColdSystem:
             print('{0} is {1}'.format(key, self.t[key]))
 
 
-main = ColdSystem(115, 'R717', 'Астрахань', -15)
+main = ColdSystem(115, 'R717', 'Ташкент', -10)
 main.get_main_temps()
 main.get_points_params()
 main.plot_graph()
 main.get_std_params()
-main.get_charact_params()
+ret = main.get_charact_params()
+print(main.compressor)
+print(ret)
