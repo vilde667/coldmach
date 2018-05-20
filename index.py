@@ -76,6 +76,15 @@ class ColdSystem:
         self.compressor = None
 
     @staticmethod
+    def set_points(obj, t, p, h, v, state, name):
+        obj.temp.value = t
+        obj.press.value = p
+        obj.ent.value = h
+        obj.cap.value = v
+        obj.state = state
+        obj.human_name = name
+
+    @staticmethod
     def __get_t_in_k(city):
         conn = sqlite3.connect('main.db')
         c = conn.cursor()
@@ -282,14 +291,10 @@ class ColdSystem:
         req = cur.fetchone()
         p_1 = req[2]
         p_1_tab_min, p_1_tab_max = self.__get_near_p(p_1)
-
         v_1, h_1, s_1, p_tab_min, p_tab_max = self.__get_over_p_t(p_1, std.t_vs + 273.15, p_1_tab_min, p_1_tab_max)
-        std.point1.temp.value = std.t_vs
-        std.point1.press.value = p_1 / 10
-        std.point1.ent.value = h_1
-        std.point1.cap.value = v_1
-        std.point1.state = 'over'
-        std.point1.human_name = '1'
+
+        self.set_points(std.point1, std.t_vs, p_1 / 10, h_1, v_1, 'over', '1')
+
         std.point1.print_all()
 
         # точка 1'
@@ -299,12 +304,9 @@ class ColdSystem:
         res_1d = cur.fetchone()
         conn.close()
         v_1d, h_1d = res_1d
-        std.point1d.temp.value = std.t_0
-        std.point1d.press.value = p_1 / 10
-        std.point1d.ent.value = h_1d
-        std.point1d.cap.value = v_1d
-        std.point1d.state = 'wet'
-        std.point1d.human_name = '1\''
+
+        self.set_points(std.point1d, std.t_0, p_1 / 10, h_1d, v_1d, 'wet', '1\'')
+
         std.point1d.print_all()
 
         # точка 2
@@ -317,62 +319,41 @@ class ColdSystem:
         p_2_tab_min, p_2_tab_max = self.__get_near_p(p_2)
         t_2, h_2, v_2 = self.__get_over_p_s(p_2, s_1, p_2_tab_min, p_2_tab_max)
 
-        std.point2.temp.value = t_2 - 273.15
-        std.point2.press.value = p_2 / 10
-        std.point2.ent.value = h_2
-        std.point2.cap.value = v_2
-        std.point2.state = 'over'
-        std.point2.human_name = '2'
+        self.set_points(std.point2, t_2 - 273.15, p_2 / 10, h_2, v_2, 'over', '2')
+
         std.point2.print_all()
 
         # точка 2'
         v_2d, h_2d = self.__get_wet_p_max(p_2)
-        std.point2d.temp.value = std.t_k
-        std.point2d.press.value = std.point2.press.value
-        std.point2d.ent.value = h_2d
-        std.point2d.cap.value = v_2d
-        std.point2d.state = 'wet'
-        std.point2d.human_name = '2\''
+
+        self.set_points(std.point2d, std.t_k, std.point2.press.value, h_2d, v_2d, 'wet', '2\'')
+
         std.point2d.print_all()
 
         # точка 3'
         v_3d, h_3d = self.__get_wet_p_min(p_2)
-        std.point3d.temp.value = std.t_k
-        std.point3d.press.value = std.point2.press.value
-        std.point3d.ent.value = h_3d
-        std.point3d.cap.value = v_3d
-        std.point3d.state = 'wet'
-        std.point3d.human_name = '3\''
+
+        self.set_points(std.point3d, std.t_k, std.point2.press.value, h_3d, v_3d, 'wet', '3\'')
+
         std.point3d.print_all()
 
         # точка 3
         h_3, v_3 = self.__get_point3(std.point2d.press.value * 10, std.t_p + 273.15)
-        std.point3.temp.value = std.t_p
-        std.point3.press.value = std.point2.press.value
-        std.point3.ent.value = h_3
-        std.point3.cap.value = v_3
-        std.point3.state = 'liquid'
-        std.point3.human_name = '3'
+
+        self.set_points(std.point3, std.t_p, std.point2.press.value, h_3, v_3, 'liquid', '3')
+
         std.point3.print_all()
 
         # точка 4
         v_4, v_4d = self.__get_points_4_4d(round(std.t_0 + 273.15), h_3, h_3d)
 
-        std.point4.temp.value = std.t_0
-        std.point4.press.value = std.point1.press.value
-        std.point4.ent.value = std.point3.ent.value
-        std.point4.cap.value = v_4
-        std.point4.state = 'wet'
-        std.point4.human_name = '4'
+        self.set_points(std.point4, std.t_0, std.point1.press.value, std.point3.ent.value, v_4, 'wet', '4')
+
         std.point4.print_all()
 
         # точка 4'
-        std.point4d.temp.value = std.t_0
-        std.point4d.press.value = std.point1.press.value
-        std.point4d.ent.value = std.point3d.ent.value
-        std.point4d.cap.value = v_4d
-        std.point4d.state = 'wet'
-        std.point4d.human_name = '4\''
+        self.set_points(std.point4d, std.t_0, std.point1.press.value, std.point3d.ent.value, v_4d, 'wet', '4\'')
+
         std.point4d.print_all()
 
         x = np.arange(std.point1.ent.value, std.point2.ent.value)
@@ -441,7 +422,6 @@ class ColdSystem:
         return [q0, ll, qk, e, g0, v0, qv, q0_st]
 
     def get_points_params(self):
-        # Точка 1
         o = self.t['o'] + 273.15
         o = round(o)
         vs = self.t['vs'] + 273.15
@@ -452,78 +432,59 @@ class ColdSystem:
         p_2 = self.__query('amm_wet', 'P', t=cond)[0]  # type: float
         p_1_tab_min, p_1_tab_max = self.__get_near_p(p_1)
         p_2_tab_min, p_2_tab_max = self.__get_near_p(p_2)
+
+        # Точка 1
         v_1, h_1, s_1, p_tab_min, p_tab_max = self.__get_over_p_t(p_1, vs, p_1_tab_min, p_1_tab_max)
-        self.point1.temp.value = self.t['vs']
-        self.point1.press.value = p_1 / 10
-        self.point1.ent.value = h_1
-        self.point1.cap.value = v_1
-        self.point1.state = 'over'
-        self.point1.human_name = '1'
+
+        self.set_points(self.point1, self.t['vs'], p_1 / 10, h_1, v_1, 'over', '1')
+
         self.point1.print_all()
 
         # точка 1'
         v_1d, h_1d = self.__query('amm_wet', 'vdd, hdd', p=p_1)
-        self.point1d.temp.value = self.t['o']
-        self.point1d.press.value = p_1 / 10
-        self.point1d.ent.value = h_1d
-        self.point1d.cap.value = v_1d
-        self.point1d.state = 'wet'
-        self.point1d.human_name = '1\''
+
+        self.set_points(self.point1d, self.t['o'], p_1 / 10, h_1d, v_1d, 'wet', '1\'')
+
         self.point1d.print_all()
 
+        # точка 2
         t_2, h_2, v_2 = self.__get_over_p_s(p_2, s_1, p_2_tab_min, p_2_tab_max)
 
-        self.point2.temp.value = t_2 - 273.15
-        self.point2.press.value = p_2 / 10
-        self.point2.ent.value = h_2
-        self.point2.cap.value = v_2
-        self.point2.state = 'over'
-        self.point2.human_name = '2'
+        self.set_points(self.point2, t_2 - 273.15, p_2 / 10, h_2, v_2, 'over', '2')
+
         self.point2.print_all()
 
+        # точка 2'
         v_2d, h_2d = self.__get_wet_p_max(p_2)
-        self.point2d.temp.value = self.t['cond']
-        self.point2d.press.value = self.point2.press.value
-        self.point2d.ent.value = h_2d
-        self.point2d.cap.value = v_2d
-        self.point2d.state = 'wet'
-        self.point2d.human_name = '2\''
+
+        self.set_points(self.point2d, self.t['cond'], self.point2.press.value, h_2d, v_2d, 'wet', '2\'')
+
         self.point2d.print_all()
 
+        # точка 3'
         v_3d, h_3d = self.__get_wet_p_min(p_2)
-        self.point3d.temp.value = self.t['cond']
-        self.point3d.press.value = self.point2.press.value
-        self.point3d.ent.value = h_3d
-        self.point3d.cap.value = v_3d
-        self.point3d.state = 'wet'
-        self.point3d.human_name = '3\''
+
+        self.set_points(self.point3d, self.t['cond'], self.point2.press.value, h_3d, v_3d, 'wet', '3\'')
+
         self.point3d.print_all()
 
+        # точка 3
         h_3, v_3 = self.__get_point3(self.point2d.press.value * 10, self.t['over'] + 273.15)
-        self.point3.temp.value = self.t['over']
-        self.point3.press.value = self.point2.press.value
-        self.point3.ent.value = h_3
-        self.point3.cap.value = v_3
-        self.point3.state = 'liquid'
-        self.point3.human_name = '3'
+
+        self.set_points(self.point3, self.t['over'], self.point2.press.value, h_3, v_3, 'liquid', '3')
+
         self.point3.print_all()
 
+        # точка 4
         v_4, v_4d = self.__get_points_4_4d(o, h_3, h_3d)
 
-        self.point4.temp.value = self.t['o']
-        self.point4.press.value = self.point1.press.value
-        self.point4.ent.value = self.point3.ent.value
-        self.point4.cap.value = v_4
-        self.point4.state = 'wet'
-        self.point4.human_name = '4'
+        self.set_points(self.point4, self.t['o'], self.point1.press.value, self.point3.ent.value, v_4, 'wet', '4')
+
         self.point4.print_all()
 
-        self.point4d.temp.value = self.t['o']
-        self.point4d.press.value = self.point1.press.value
-        self.point4d.ent.value = self.point3d.ent.value
-        self.point4d.cap.value = v_4d
-        self.point4d.state = 'wet'
-        self.point4d.human_name = '4\''
+        # точка 4'
+        self.set_points(self.point4d, self.t['o'], self.point1.press.value, self.point3d.ent.value, v_4d, 'wet', '4\'')
+
         self.point4d.print_all()
 
     def get_main_temps(self):
