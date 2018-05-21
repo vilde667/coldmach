@@ -232,6 +232,16 @@ class ColdSystem:
         conn = sqlite3.connect('main.db')
         cur = conn.cursor()
         try:
+            if table == 'v_cond':
+                elem = ''
+                for key in kwargs:
+                    elem = key.upper()
+                cur.execute('SELECT min({0}) FROM {1} WHERE F>{2};'.format(elem, table, kwargs['f']))
+                r = cur.fetchone()
+                cur.execute('SELECT {0} FROM {1} WHERE F={2};'.format(sel, table, r[0]))
+                r = cur.fetchone()
+                return r
+
             if 'p' in kwargs.keys() and 's' in kwargs.keys():
                 cur.execute('SELECT {0} FROM {1} WHERE P={2} AND S={3};'.format(sel, table, kwargs['p'], kwargs['s']))
                 r = cur.fetchone()
@@ -418,7 +428,7 @@ class ColdSystem:
         q0_st = self.Q0 * (qv_st * lambda_st) / qv * lambda_
         q_tuple = self.__query('compressors', 'Q_' + self.Ca, Q=q0_st, agent=self.Ca)
         compressor_q = min(q_tuple)[0]
-        self.compressor = self.__query('compressors', '*', Q=compressor_q)
+        self.compressor = self.__query('compressors', '*', Q=compressor_q)[0]
         return [q0, ll, qk, e, g0, v0, qv, q0_st]
 
     def get_points_params(self):
@@ -503,8 +513,44 @@ class ColdSystem:
         for key in self.t:
             print('{0} is {1}'.format(key, self.t[key]))
 
+    # noinspection PyTypeChecker
+    def make_condensator(self):
+        q_cond = (self.compressor[5] + self.compressor[6]) * 1000
+        b = 7595
+        q_ = 4800
+        r_st = 0.45
+        f = q_cond / q_
+        cond = self.__query('v_cond', '*', f=f)
+        d_v = 57
+        n = cond[8]
+        h = cond[3]
+        cp = 4183
+        delta_t_v = 4
+        g_v = q_cond / (cp * delta_t_v)
+        o = g_v / (3.14 * d_v * n)
+        alpha_v = (2.5 + 0.07 * ((self.t['in_k'] + self.t['out_k']) / 2)) * (o ** 0.333333333)  # o - плотность орошения
+        alphad_v = (1 / (1 / alpha_v) + r_st)
+        delta_t = 0
+        x = np.arange(0, 10)
+        y = 1.31 * b * ((h * 0.001) ** (-1 * 0.25)) * 0.001 * (x ** 0.75)
+        z = -1 * alphad_v * (x - 4)
+        plt.plot(x, y)
+        plt.plot(x, z)
+        plt.show()
+        for k in range(0, 5000):
+            x = k * 0.001
+            y = 1.31 * b * (h**(-1 * 0.25)) * 0.001 * (x**0.75)
+            z = -1 * alphad_v * (x - 4)
+            if abs(y - z) < 0.1:
+                delta_t = x
+        q_pass = 1.31 * b * (h**(-1 * 0.25)) * 0.001 * (delta_t**0.75)
+        f_pass = (1.14 * q_cond * 0.001) / q_pass
+        cond_pass = self.__query('v_cond', '*', f=f_pass)
+        print(cond_pass)
+        pass
 
-main = ColdSystem(115, 'R717', 'Ташкент', -10)
+
+main = ColdSystem(115, 'R717', 'Астрахань', -15)
 main.get_main_temps()
 main.get_points_params()
 main.plot_graph()
@@ -512,3 +558,4 @@ main.get_std_params()
 ret = main.get_charact_params()
 print(main.compressor)
 print(ret)
+main.make_condensator()
