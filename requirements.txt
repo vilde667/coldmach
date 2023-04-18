@@ -1,0 +1,6 @@
+pylatex
+numpy
+plotly
+numexpr
+pandas
+scipy

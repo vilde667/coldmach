@@ -917,8 +917,8 @@ class Condensator:
         self.tmax_delta = max(deltas)
 
     def set_delta_t_log(self):
-        self.delta_t_log = ParamFormula('Δtlog', 'Расход воды на конденсатор')
-        self.delta_t_log.set_formula('Qk/(Cp*delta_tv)', {'Qk': self.Qk.value*1000, 'Cp': self.Cp.value, 'delta_tv': self.delta_t_v.value})
+        self.delta_t_log = ParamFormula('Δtlog', 'среднелогарифмическая разность температур по воде')
+        self.delta_t_log.set_formula('tmax - tmin/()', {})
         self.delta_t_log.set_unit('кг/с')
         self.delta_t_log.use()
 
