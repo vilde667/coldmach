@@ -2,23 +2,31 @@ import numpy as np
 import math
 import sqlite3
 
-from connector import DbConnector
-c = DbConnector('./db/main.db').c
-
-import numpy as np
-import pandas as pd
-from scipy import signal
-from scipy import interpolate
-
 from params import Param
 from params import ParamFormula
 
 from compressor.compressor import Compressor
 from condenser.condenser import Condenser
 
+from graphic import Graphic
+
+from tables import Cities, Compressors, FeedRatio, get_approx_value
+
 
 class MainSolver:
-    def __init__(self, Q0, city, agent, temp_brine_out, condenser_type, water_supply_type) -> None:
+    compressor: Compressor
+    delta_t: Param
+    delta_t_p: Param
+    t_brine_in: ParamFormula
+    delta_t_v: Param
+    t_in_v: Param
+    t_out_v: ParamFormula
+    t_0: ParamFormula
+    delta_t_k: Param
+    t_k: ParamFormula
+    show_graphics: bool
+
+    def __init__(self, Q0, city, agent, temp_brine_out, condenser_type, water_supply_type, show_graphics: bool) -> None:
         self.Q0 = Param('Q0', 'Расчетная холодопроизводительность')
         self.Q0.set_value(Q0, 'кВт')
 
@@ -32,6 +40,8 @@ class MainSolver:
         self.condenser_type = condenser_type
 
         self.water_supply_type = water_supply_type
+
+        self.show_graphics = show_graphics
 
         self.set_delta_t(5.0)
         self.set_delta_t_p(3.0)
@@ -47,7 +57,7 @@ class MainSolver:
         self.set_delta_t_vs(8.0)
         self.set_t_vs()
 
-        self.graphic = Graphic(self.t_0.value, self.t_vs.value, self.t_k.value, self.t_p.value)
+        self.graphic = Graphic(self.t_0.value, self.t_vs.value, self.t_k.value, self.t_p.value, self.show_graphics)
 
         self.graphic.make_graphic_template()
         self.graphic.make_graphic()
@@ -61,7 +71,7 @@ class MainSolver:
         self.set_V_0()
         self.set_q_v()
 
-        self.standart_graphic = Graphic(-15, -10, 30, 25)
+        self.standart_graphic = Graphic(-15, -10, 30, 25, self.show_graphics)
 
         self.standart_graphic.make_graphic_template()
         self.standart_graphic.make_graphic()
@@ -109,13 +119,8 @@ class MainSolver:
 
     def set_t_in_v(self, city):
 
-        c.execute('SELECT t_air_out FROM citys WHERE city=\'{0}\''.format(city))
-        res = c.fetchall()
-        if len(res) == 1:
-            result = res[0][0]
-        else:
-            result = None
-
+        res = Cities.select().where(Cities.city == city).get()
+        result = res.t_air_out
 
         self.t_in_v = Param('t\'в', 'температура воды на входе в конденсатор')
         self.t_in_v.set_value(result, '°С')
@@ -243,16 +248,18 @@ class MainSolver:
         self.compression_ratio_standart.use()
 
     def set_lambda_real(self):
-        value = TableValue(c, 'R717', {'compression_ratio': self.compression_ratio.value}, 'feed_ratio')
+        value = get_approx_value(FeedRatio, FeedRatio.R717, 'R717', FeedRatio.compression_ratio, 'compression_ratio',
+                                 self.compression_ratio.value)
         self.lambda_real = Param('λ', 'коэффициент подачи реального компрессора')
-        self.lambda_real.set_value(value.get_value(), '')
+        self.lambda_real.set_value(value, '')
         self.lambda_real.set_comment('Находим по графику 4.11 для R717 по степени сжатия={0}'.format(self.compression_ratio.value))
         self.lambda_real.use()
 
     def set_lambda_standart(self):
-        value = TableValue(c, 'R717', {'compression_ratio': self.compression_ratio_standart.value}, 'feed_ratio')
+        value = get_approx_value(FeedRatio, FeedRatio.R717, 'R717', FeedRatio.compression_ratio, 'compression_ratio',
+                                 self.compression_ratio_standart.value)
         self.lambda_standart = Param('λ', 'коэффициент подачи стандартного компрессора')
-        self.lambda_standart.set_value(value.get_value(), '')
+        self.lambda_standart.set_value(value, '')
         self.lambda_standart.set_comment('Находим по графику 4.11 для R717 по степени сжатия={0}'.format(self.compression_ratio_standart.value))
         self.lambda_standart.use()
 
@@ -263,21 +270,17 @@ class MainSolver:
         self.Q0_st.use()
 
     def set_compressor(self):
-        c.execute('SELECT mark,diameter,piston_stroke,theor_v,frequency,Q_R717,N_R717 FROM compressors WHERE Q_R717 IS NOT NULL AND Q_R717>{0} ORDER BY Q_R717'.format(self.Q0_st.value))
-        row = c.fetchone()
-        if row:
-            params = {}
-            params['mark'] = row[0]
-            params['diameter'] = row[1]
-            params['piston_stroke'] = row[2]
-            params['theor_v'] = row[3]
-            params['frequency'] = row[4]
-            params['Q_R717'] = row[5]
-            params['N_R717'] = row[6]
 
-            self.compressor = Compressor(params)
+        compressor = Compressors.select().where(Compressors.Q_R717 > self.Q0_st.value).order_by(Compressors.Q_R717)\
+                     .get()
 
-            print('По полученной холодопроизводительности выбираем компрессор марки ' + self.compressor.mark)
+        params = {'mark': compressor.mark, 'diameter': compressor.diameter, 'piston_stroke': compressor.piston_stroke,
+                  'theor_v': compressor.theor_v, 'frequency': compressor.frequency, 'Q_R717': compressor.Q_R717,
+                  'N_R717': compressor.N_R717}
+
+        self.compressor = Compressor(params)
+
+        print('По полученной холодопроизводительности выбираем компрессор марки ' + compressor.mark)
     
     def set_N(self):
         self.N = Param('N', 'количество компрессоров холодильной установки')
@@ -298,66 +301,4 @@ class MainSolver:
         self.G_0_.use()
 
 
-
-
-
-class TableValue:
-    def __init__(self, cursor:sqlite3.Cursor, param:dict, known_param:dict, table_name:str) -> None:
-        self.param = param
-        self.known_param_key = list(known_param.keys())[0]
-        self.known_param_value = known_param[self.known_param_key]
-        self.table_name = table_name
-        self.cursor = cursor
-
-    def get_value(self):
-        known_values = []
-        c.execute('SELECT {0} FROM {1}'.format(self.known_param_key, self.table_name))
-        res = c.fetchall()
-        for r in res:
-            known_values.append(float(r[0]))
-        res = list(set(known_values))
-        res.sort()
-
-        known_value_min = min(res, key=lambda x:abs(x-self.known_param_value))
-
-        if known_value_min > self.known_param_value:
-            known_value_min = res[res.index(known_value_min) - 1]
-
-        known_value_max = res[res.index(known_value_min) + 1]
-
-        if self.known_param_value == known_value_min:
-            c.execute('SELECT {0} FROM {1} WHERE {2}={3}'.format(self.param, self.table_name, self.known_param_key, known_value_min))
-            res = c.fetchall()
-            for r in res:
-                return r[0]
-        elif self.known_param_value == known_value_max:
-            c.execute('SELECT {0} FROM {1} WHERE {2}={3}'.format(self.param, self.table_name, self.known_param_key, known_value_max))
-            res = c.fetchall()
-            for r in res:
-                return r[0]
-        else:
-            param_min = 0
-            param_max = 0
-            c.execute('SELECT {0} FROM {1} WHERE {2}={3}'.format(self.param, self.table_name, self.known_param_key, known_value_min))
-            res = c.fetchall()
-            for r in res:
-                param_min = r[0]
-
-            c.execute('SELECT {0} FROM {1} WHERE {2}={3}'.format(self.param, self.table_name, self.known_param_key, known_value_max))
-            res = c.fetchall()
-            for r in res:
-                param_max = r[0]
-
-            k = (self.known_param_value - known_value_min) / (known_value_max - known_value_min)
-            return param_min + (param_max - param_min)*k
-
-
-
-        
-
-
-        
-
-solver = MainSolver(180.0, 'Владимир', 'R717', -2.0, 'КТ', 'оборотное')
-
-    
+solver = MainSolver(180.0, 'Владимир', 'R717', -2.0, 'КТ', 'оборотное', True)

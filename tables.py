@@ -3,11 +3,63 @@ from peewee import *
 db = SqliteDatabase('./db/main.db')
 
 
+def get_approx_value(table, param, param_str, known_param, known_param_str, known_value):
+    known_values = []
+    results = table.select()
+    for r in results:
+        known_values.append(getattr(r, known_param_str))
+    res = list(set(known_values))
+    res.sort()
+
+    known_value_min = min(res, key=lambda x: abs(x - known_value))
+
+    if known_value_min > known_value:
+        known_value_min = res[res.index(known_value_min) - 1]
+
+    known_value_max = res[res.index(known_value_min) + 1]
+
+    if known_value == known_value_min:
+        results = table.select().where(known_param == known_value_min)
+        for r in results:
+            return getattr(r, param_str)
+    elif known_value == known_value_max:
+        results = table.select().where(known_param == known_value_max)
+        for r in results:
+            return getattr(r, param_str)
+    else:
+        param_min = 0
+        param_max = 0
+        results = table.select().where(known_param == known_value_min)
+
+        for r in results:
+            param_min = getattr(r, param_str)
+
+        results = table.select().where(known_param == known_value_max)
+
+        for r in results:
+            param_max = getattr(r, param_str)
+
+        k = (known_value - known_value_min) / (known_value_max - known_value_min)
+        return param_min + (param_max - param_min) * k
+
+
 class Cities(Model):
     __doc__ = '''Список городов со средими температурами воздеха в летний период'''
 
     city = CharField()
     t_air_out = IntegerField()
+
+    class Meta:
+        database = db
+
+
+class FeedRatio(Model):
+    __doc__ = '''Коэффициент подачи для реального компреммора для разных хладагентов'''
+
+    compression_ratio = IntegerField()
+    R717 = FloatField()
+    R22 = FloatField()
+    R12 = FloatField()
 
     class Meta:
         database = db
