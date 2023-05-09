@@ -4,3 +4,4 @@ plotly
 numexpr
 pandas
 scipy
+peewee
